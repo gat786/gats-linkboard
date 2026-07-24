@@ -4,6 +4,14 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
+		<script>
+			// Must stay blocking and inline, or the page flashes the wrong theme.
+			try {
+				var saved = localStorage.getItem('linkboard-theme');
+			} catch (e) {}
+			document.documentElement.dataset.theme =
+				saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
