@@ -1,95 +1,39 @@
 <script>
 	import { onMount } from 'svelte';
 
-	const themes = {
-		light: {
-			name: 'Light',
-			bg: '#f8f9fa',
-			surface: '#ffffff',
-			text: '#1a1a2e',
-			textSecondary: '#555770',
-			accent: '#0d6efd',
-			accentHover: '#0b5ed7',
-			border: '#dee2e6',
-			shadow: 'rgba(0,0,0,0.08)',
-			pill: '#e2e4e8',
-			pillText: '#343a40'
-		},
-		dark: {
-			name: 'Dark',
-			bg: '#000000',
-			surface: '#161b22',
-			text: '#e6edf3',
-			textSecondary: '#a8b5c4',
-			accent: '#58a6ff',
-			accentHover: '#79c0ff',
-			border: '#30363d',
-			shadow: 'rgba(0,0,0,0.4)',
-			pill: '#21262d',
-			pillText: '#c4cdd9'
-		},
-		ocean: {
-			name: 'Ocean',
-			bg: '#0b1628',
-			surface: '#112240',
-			text: '#ccd6f6',
-			textSecondary: '#a8b4d0',
-			accent: '#64ffda',
-			accentHover: '#a8ffe0',
-			border: '#233554',
-			shadow: 'rgba(0,0,0,0.3)',
-			pill: '#1d3461',
-			pillText: '#b0bee0'
-		},
-		forest: {
-			name: 'Forest',
-			bg: '#1a2e1a',
-			surface: '#243b24',
-			text: '#d4e8d4',
-			textSecondary: '#a4cca4',
-			accent: '#66bb6a',
-			accentHover: '#81c784',
-			border: '#3a5c3a',
-			shadow: 'rgba(0,0,0,0.3)',
-			pill: '#2e4a2e',
-			pillText: '#b0d8b0'
-		},
-		sunset: {
-			name: 'Sunset',
-			bg: '#1a1025',
-			surface: '#2d1b42',
-			text: '#f0e6ff',
-			textSecondary: '#c8b0eb',
-			accent: '#ff8a65',
-			accentHover: '#ffab91',
-			border: '#4a2d6e',
-			shadow: 'rgba(0,0,0,0.3)',
-			pill: '#3a2556',
-			pillText: '#d4c0f0'
-		}
-	};
+	const THEMES = [
+		{ key: 'light', name: 'Light' },
+		{ key: 'dark', name: 'Dark' },
+		{ key: 'ocean', name: 'Ocean' },
+		{ key: 'forest', name: 'Forest' },
+		{ key: 'sunset', name: 'Sunset' }
+	];
 
 	let links = $state([]);
-	let currentTheme = $state('dark');
+	// Read from the DOM, not storage — app.html already resolved it, and starting
+	// anywhere else reintroduces the flash.
+	let currentTheme = $state(document.documentElement.dataset.theme ?? 'dark');
 	let loaded = $state(false);
 
-	onMount(() => {
-		const saved = localStorage.getItem('linkboard-theme');
-		if (saved && themes[saved]) {
-			currentTheme = saved;
-		}
+	$effect(() => {
+		document.documentElement.dataset.theme = currentTheme;
+	});
 
-		fetch('/links.json')
-			.then(r => r.json())
-			.then(data => {
-				links = data;
-				loaded = true;
-			});
+	onMount(async () => {
+		try {
+			links = await (await fetch('/links.json')).json();
+		} catch {
+			// leave links empty — the empty state explains what to do
+		}
+		loaded = true;
 	});
 
 	function setTheme(name) {
 		currentTheme = name;
-		localStorage.setItem('linkboard-theme', name);
+		// Throws when site data is blocked; the theme still applies, just isn't kept.
+		try {
+			localStorage.setItem('linkboard-theme', name);
+		} catch {}
 	}
 
 	function getDomain(url) {
@@ -114,30 +58,19 @@
 	<title>Ganesh's LinkBoard</title>
 </svelte:head>
 
-<div class="app" style="
-	--bg: {themes[currentTheme].bg};
-	--surface: {themes[currentTheme].surface};
-	--text: {themes[currentTheme].text};
-	--text-secondary: {themes[currentTheme].textSecondary};
-	--accent: {themes[currentTheme].accent};
-	--accent-hover: {themes[currentTheme].accentHover};
-	--border: {themes[currentTheme].border};
-	--shadow: {themes[currentTheme].shadow};
-	--pill: {themes[currentTheme].pill};
-	--pill-text: {themes[currentTheme].pillText};
-">
+<div class="app">
 	<header>
 		<div class="header-content">
 			<h1>Ganesh's Linkboard</h1>
 			<p class="subtitle">{links.length} bookmarked links</p>
 		</div>
-		<div class="theme-switcher">
-			{#each Object.entries(themes) as [key, theme]}
+		<div class="theme-switcher" role="group" aria-label="Colour theme">
+			{#each THEMES as theme}
 				<button
 					class="theme-btn"
-					class:active={currentTheme === key}
-					onclick={() => setTheme(key)}
-					title={theme.name}
+					class:active={currentTheme === theme.key}
+					aria-pressed={currentTheme === theme.key}
+					onclick={() => setTheme(theme.key)}
 				>
 					{theme.name}
 				</button>
@@ -192,10 +125,91 @@
 		box-sizing: border-box;
 	}
 
+	/* Must be :root — custom properties inherit downward only, so html/body
+	   can't see them anywhere else. Dark lives here, so it needs no block. */
+	:global(:root) {
+		color-scheme: dark;
+		--bg: #0d1117;
+		--surface: #161b22;
+		--text: #e6edf3;
+		--text-secondary: #a8b5c4;
+		--accent: #58a6ff;
+		--accent-text: #0d1117;
+		--border: #30363d;
+		--shadow: rgba(0, 0, 0, 0.4);
+		--pill: #21262d;
+		--pill-text: #c4cdd9;
+	}
+
+	:global(:root[data-theme='light']) {
+		color-scheme: light;
+		--bg: #f1f3f5;
+		--surface: #ffffff;
+		--text: #1a1a2e;
+		--text-secondary: #4d5064;
+		--accent: #0b5ed7;
+		--accent-text: #ffffff;
+		--border: #c8ced4;
+		--shadow: rgba(13, 17, 23, 0.1);
+		--pill: #e2e4e8;
+		--pill-text: #343a40;
+	}
+
+	:global(:root[data-theme='ocean']) {
+		--bg: #0b1628;
+		--surface: #112240;
+		--text: #ccd6f6;
+		--text-secondary: #a8b4d0;
+		--accent: #64ffda;
+		--accent-text: #06111f;
+		--border: #233554;
+		--shadow: rgba(0, 0, 0, 0.3);
+		--pill: #1d3461;
+		--pill-text: #b0bee0;
+	}
+
+	:global(:root[data-theme='forest']) {
+		--bg: #1a2e1a;
+		--surface: #243b24;
+		--text: #d4e8d4;
+		--text-secondary: #a4cca4;
+		--accent: #66bb6a;
+		--accent-text: #10200f;
+		--border: #3a5c3a;
+		--shadow: rgba(0, 0, 0, 0.3);
+		--pill: #2e4a2e;
+		--pill-text: #b0d8b0;
+	}
+
+	:global(:root[data-theme='sunset']) {
+		--bg: #1a1025;
+		--surface: #2d1b42;
+		--text: #f0e6ff;
+		--text-secondary: #c8b0eb;
+		--accent: #ff8a65;
+		--accent-text: #1a1025;
+		--border: #4a2d6e;
+		--shadow: rgba(0, 0, 0, 0.3);
+		--pill: #3a2556;
+		--pill-text: #d4c0f0;
+	}
+
+	:global(html),
 	:global(body) {
-		background: var(--bg);
+		background-color: var(--bg);
+	}
+
+	:global(body) {
 		min-height: 100vh;
-		transition: background 0.3s ease;
+		transition: background-color 0.3s ease;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(*) {
+			transition-duration: 0.01ms !important;
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+		}
 	}
 
 	.app {
@@ -260,7 +274,8 @@
 
 	.theme-btn.active {
 		background: var(--accent);
-		color: var(--bg);
+		/* Not var(--bg) — that failed contrast in Light. */
+		color: var(--accent-text);
 	}
 
 	main {
