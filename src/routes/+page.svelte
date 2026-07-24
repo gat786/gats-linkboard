@@ -111,7 +111,7 @@
 </script>
 
 <svelte:head>
-	<title>LinkBoard</title>
+	<title>Ganesh's LinkBoard</title>
 </svelte:head>
 
 <div class="app" style="
@@ -128,7 +128,7 @@
 ">
 	<header>
 		<div class="header-content">
-			<h1>LinkBoard</h1>
+			<h1>Ganesh's Linkboard</h1>
 			<p class="subtitle">{links.length} bookmarked links</p>
 		</div>
 		<div class="theme-switcher">
