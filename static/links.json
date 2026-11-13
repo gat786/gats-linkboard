@@ -4,16 +4,8 @@
     "link": "https://gats.dev"
   },
   {
-    "title": "Linkedin",
-    "link": "https://linkedin.com/in/gat786"
-  },
-  {
-    "title": "GitHub",
-    "link": "https://github.com/gat786"
-  },
-  {
-    "title": "DevOps Blogs",
-    "link": "https://devops-stuff.dev"
+    "title": "Youtube Channel",
+    "link": "https://www.youtube.com/@gatsdev"
   },
   {
     "title": "Instagram",
@@ -22,6 +14,18 @@
   {
     "title": "Twitter/X",
     "link": "https://x.com/igat786"
+  },
+  {
+    "title": "Linkedin",
+    "link": "https://linkedin.com/in/gat786"
+  },
+  {
+    "title": "GitHub",
+    "link": "https://github.com/gat786"
+  },
+  {
+    "title": "DevOps Stuff",
+    "link": "https://devops-stuff.dev"
   },
   {
     "title": "Mastodon",
